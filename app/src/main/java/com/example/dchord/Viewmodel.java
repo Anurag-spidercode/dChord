@@ -1,17 +1,25 @@
 package com.example.dchord;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import java.util.List;
 
-public class Viewmodel extends ViewModel {
+public class Viewmodel extends AndroidViewModel {
     private final MutableLiveData<List<data>> songlist = new MutableLiveData<>();
 
     private final MutableLiveData<String> songname = new MutableLiveData<>("");
 
     private final MutableLiveData<String> artist = new MutableLiveData<>("");
+
+    public Viewmodel(@NonNull Application application) {
+        super(application);
+    }
 
     public LiveData<List<data>> getSongList(){  // getter method to observe data
         return songlist;

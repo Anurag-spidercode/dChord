@@ -26,8 +26,11 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
     private List<data> list;
     ProgressBar progressBar2;
 
-    public adapter(List<data> list) {
+    private Viewmodel viewmodel;
+
+    public adapter(List<data> list, Viewmodel viewmodel) {
         this.list = list;
+        this.viewmodel = viewmodel;
     }
 
     @NonNull
@@ -74,6 +77,10 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
                 }
                 Singleton.getInstance().setTitle(song.getTitle());
                 Singleton.getInstance().setArtist(song.getArtist());
+
+                viewmodel.setSongname(song.getTitle());
+                viewmodel.setArtist(song.getArtist());
+
                 Intent intent = new Intent(v.getContext(), foregroundservice.class);
                 intent.putExtra(filepathurl, song.getTitle());
                 intent.putExtra(filepathurl2, song.getArtist());

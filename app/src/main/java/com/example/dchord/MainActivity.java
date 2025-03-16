@@ -23,6 +23,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -52,7 +53,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewmodel = new ViewModelProvider(this).get(Viewmodel.class);
+        viewmodel = new ViewModelProvider(
+                this, new ViewModelProvider.AndroidViewModelFactory(getApplication())
+        ).get(Viewmodel.class);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
@@ -150,26 +154,26 @@ public class MainActivity extends AppCompatActivity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            title = Singleton.getInstance().getTitle();
-
-            if (title != null && !title.isEmpty()) {
+//            title = Singleton.getInstance().getTitle();
+//
+//            if (title != null && !title.isEmpty()) {
 //                viewmodel.setSongname(title);
-                onfocus();
-                boolean update = Singleton.getInstance().getUpdate();
-                String titler = "";
-                if(title.length()> 15){
-                    titler = title.substring(0, 15) + "...";
-                    titlemain.setText(titler);
-                }
-                else
-                {
-                    titlemain.setText(title);
-                }
-                
+            viewmodel.getsongName().observe(this, title ->{
+                if(title != null && !title.isEmpty()) {
+                    onfocus();
+                    boolean update = Singleton.getInstance().getUpdate();
+                    String titler = "";
+                    if (title.length() > 15) {
+                        titler = title.substring(0, 15) + "...";
+                        titlemain.setText(titler);
+                    } else {
+                        titlemain.setText(title);
+                    }
 
-                if (update == true) {
-                    playmain.setVisibility(View.GONE);
-                    pausemain.setVisibility(View.VISIBLE);
+
+                    if (update == true) {
+                        playmain.setVisibility(View.GONE);
+                        pausemain.setVisibility(View.VISIBLE);
 //                    viewmodel.getsongName().observe(this, new Observer<String>() {
 //                        @Override
 //                        public void onChanged(String s) {
@@ -182,12 +186,12 @@ public class MainActivity extends AppCompatActivity {
 //                            }
 //                        }
 //                    });
+                    } else {
+                        playmain.setVisibility(View.VISIBLE);
+                        pausemain.setVisibility(View.GONE);
+                    }
                 }
-                else{
-                    playmain.setVisibility(View.VISIBLE);
-                    pausemain.setVisibility(View.GONE);
-                }
-            }
+            });
 
         } else {
             //maybe in future. I said maybe if needed
@@ -247,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         viewmodel.getSongList().observe(this, songs -> {
             if (songs != null && !songs.isEmpty()) {
                 if (adaptr == null) {
-                    adaptr = new adapter(songs);
+                    adaptr = new adapter(songs, viewmodel);
                     recyclerView.setAdapter(adaptr);
                 } else {
                     adaptr.updateSongs(songs);

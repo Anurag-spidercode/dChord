@@ -25,6 +25,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 
 public class Playsong extends AppCompatActivity {
 
@@ -50,7 +51,9 @@ public class Playsong extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewmodel = new ViewModelProvider(this).get(Viewmodel.class);
+        viewmodel = new ViewModelProvider(
+                this, new ViewModelProvider.AndroidViewModelFactory(getApplication())
+        ).get(Viewmodel.class);
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.playsong);
@@ -68,18 +71,31 @@ public class Playsong extends AppCompatActivity {
         endingtime = findViewById(R.id.endingtime);
         progressbar = findViewById(R.id.progressBar);
 
+        viewmodel.getsongName().observe(this, name ->{
+            name = Singleton.getInstance().getTitle();
+            if(name.length() > 15)
+            {
+                name = name.substring(0,15) + "...";
+            }
+            title.setText(name);
+        });
 
-            viewmodel.setSongname(Singleton.getInstance().getTitle());
-            viewmodel.setArtist(Singleton.getInstance().getArtist());
+        viewmodel.getArtist().observe(this, artistname ->{
+            artistname = Singleton.getInstance().getArtist();
+            if(artistname.length() > 15)
+            {
+                artistname = artistname.substring(0,14) + "...";
+            }
+            artist.setText(artistname);
+        });
 
         progressbar.setMax((int) Singleton.getInstance().getMaxduration());
-
 
         updateSeekBarTask = new Runnable() {
 
             @Override
             public void run() {
-                if (foregroundservice.mediaPlayer != null) {
+                if (foregroundservice.mediaPlayer != null  && mediaPlayer.isPlaying()) {
 
                     int currentPos = mediaPlayer.getCurrentPosition();
                     progressbar.setProgress(currentPos);
@@ -124,30 +140,7 @@ public class Playsong extends AppCompatActivity {
 
         playbutton.setVisibility(View.GONE);
 
-//        String Title = Singleton.getInstance().getTitle();
-//        String Artist = Singleton.getInstance().getArtist();
 
-        viewmodel.getsongName().observe(this, new Observer<String>(){
-            @Override
-            public void onChanged(String s) {
-                if(s.length() > 15)
-                {
-                    s = s.substring(0,15) + "...";
-                }
-                title.setText(s);
-            }
-        });
-
-        viewmodel.getArtist().observe(this, new Observer<String>(){
-            @Override
-            public void onChanged(String s) {
-                if(s.length() > 15)
-                {
-                    s = s.substring(0,14) + "...";
-                }
-                artist.setText(s);
-            }
-        });
 
         intent = new Intent(this, foregroundservice.class);
 
@@ -187,30 +180,13 @@ public class Playsong extends AppCompatActivity {
 
 
 
-        @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);  // Update intent reference
-
-        // Extract new data (if any) and update UI
-        updateUIFromIntent(intent);
-    }
-
-    private void updateUIFromIntent(Intent intent) {
-        String newTitle = intent.getStringExtra("title");
-        String newArtist = intent.getStringExtra("artist");
-
-        if (newTitle != null) title.setText(newTitle);
-        if (newArtist != null) artist.setText(newArtist);
-    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-
             boolean update = Singleton.getInstance().getUpdate();
-            if(update == true)
+            if(update)
             {
                 playbutton.setVisibility(View.GONE);
                 pausebutton.setVisibility(View.VISIBLE);
