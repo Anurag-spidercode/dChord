@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_notification_bg"
+    android:orientation="horizontal"
+    android:paddingTop="20dp">
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="-5dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/defaultimg" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/libraryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/manrope_boldd"
+            android:text="Song Title"
+            android:textColor="#F5F4F7"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/libraryArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/manrope_medium"
+            android:text="Artist Name"
+            android:textColor="#AAA"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:id="@+id/y"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="5dp"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/previouslist"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="20dp"
+                android:src="@drawable/previous" />
+
+            <ImageView
+                android:id="@+id/pauselist"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/pause"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/playlist"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/play"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/nextlist"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/next" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

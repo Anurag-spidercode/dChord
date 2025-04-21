@@ -1,210 +1,135 @@
 package com.example.dchord;
 
+
 import static com.example.dchord.adapter.filepathurl;
 import static com.example.dchord.adapter.filepathurl2;
 import static com.example.dchord.adapter.filepathurl3;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
-import android.os.Binder;
+import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Messenger;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.view.View;
+import android.widget.Adapter;
+import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
-
-import com.example.dchord.Singleton;
 
 import java.io.IOException;
-
-public class foregroundservice extends Service{
-    String titleretrive;
-    String artistretrive;
-    String filepathretrive;
-
-    int minute;
-    int second;
-
-    static int durationprogress;
-
-    int currentminute;
-    int currentsecond;
+import java.util.ArrayList;
+import java.util.List;
 
 
-    Intent intent = new Intent("com.example.dchord.broadcastreceiver");
+public class foregroundservice extends Service {
+    private MediaSessionCompat mediaSession;
+    private static final String CHANNEL_ID = "music_channel";
 
-    static MediaPlayer mediaPlayer;
+    String title;
+    String artist;
+    String path;
+    int index = 0;
 
-    private Messenger activitymessenger = null;
-    //    private final Messenger servicemesseger = new Messenger(new IncomingHandler());
-    private int maxdurationretriever;
-    private boolean play = true;
+    public MediaPlayer  mediaPlayer;
+    Singleton singleton = Singleton.getInstance();
+    private List<data> list;
+    private final BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if ("ACTION_PLAY_PAUSE".equals(action)) {
+                play();
+            } else if ("ACTION_NEXT".equals(action)) {
+                next();
+            } else if ("ACTION_PREV".equals(action)) {
+                previous();
+            } else if ("ACTION_PAUSE_PAUSE".equals(action)) {
+                pause();
+            }
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mediaPlayer = new MediaPlayer();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // Ensures this runs only on Android 8.0+
-            NotificationChannel channel = new NotificationChannel(
-                    "CHANNEL_ID", // Unique ID for the channel
-                    "Music Playback", // Visible name in system settings
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel); // Update notification
-            }
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("ACTION_PLAY_PAUSE");
+        filter.addAction("ACTION_NEXT");
+        filter.addAction("ACTION_PREV");
+        filter.addAction("ACTION_PAUSE_PAUSE");
+        registerReceiver(notificationReceiver, filter);
+
+        mediaSession = new MediaSessionCompat(this, "MusicSession");
+        createNotificationChannel();
+
+        if(mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
         }
-
-
-    }
-    private Notification createNotification() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "CHANNEL_ID")
-                .setContentTitle(titleretrive != null ? titleretrive : titleretrive)
-                .setContentText(artistretrive != null ? artistretrive : artistretrive)
-                .setSmallIcon(R.drawable.app_icon)
-                .setOngoing(true) // Prevents accidental dismissal
-                .setPriority(NotificationCompat.PRIORITY_HIGH) // Keeps it visible in the drawer
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .addAction(R.drawable.play, "Play", getPlaybackAction("play"))
-                .addAction(R.drawable.pause, "Pause", getPlaybackAction("pause"));
-//                .addAction(R.drawable.stop, "Stop", getPlaybackAction("stop"));
-
-        builder.addAction(R.drawable.play, "Play", getPlaybackAction("play"))
-                .addAction(R.drawable.pause, "Pause", getPlaybackAction("pause"));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // Android 14+
-            builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE);
-        }
-
-        return builder.build();
     }
 
-    private PendingIntent getPlaybackAction(String action) {
-        Intent intent = new Intent(this, foregroundservice.class);
-        intent.setAction(action);
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if(intent != null && intent.hasExtra(filepathurl3)){
-            filepathretrive = intent.getStringExtra(filepathurl3);
-            titleretrive = intent.getStringExtra(filepathurl);
-            artistretrive = intent.getStringExtra(filepathurl2);
-
-
-            if (filepathretrive == null || filepathretrive.isEmpty()) {
-                stopSelf();
-                return START_NOT_STICKY;
+        list = singleton.getSongList();
+        if(intent != null) {
+            String titleDummy = intent.getStringExtra(filepathurl);
+            String artistDummy = intent.getStringExtra(filepathurl2);
+            path = intent.getStringExtra(filepathurl3);
+            String action = intent.getStringExtra("action");
+            if (action != null) {
+                switch (action) {
+                    case "start":
+                        play();
+                        break;
+                    case "pause":
+                        pause();
+                        break;
+                    case "next":
+                        next();
+                        break;
+                    case "previous":
+                        previous();
+                        break;
+                }
             }
 
-            try {
-                mediaPlayer.reset();
-                mediaPlayer.setDataSource(filepathretrive);
-                mediaPlayer.prepare();
-                maxdurationretriever = mediaPlayer.getDuration();
-                Singleton.getInstance().setMaxduration(maxdurationretriever);
+            setname(titleDummy, artistDummy);
 
-                Notification notification = createNotification();
-                startForeground(1,notification);
+//            if(titleDummy != null && artistDummy != null) {
+//                if (titleDummy.length() > 20) {
+//                    title = titleDummy.substring(0, 20) + "...";
+//                } else {
+//                    title = titleDummy;
+//                }
+//
+//                if (artistDummy.length() > 35) {
+//                    artist = artistDummy.substring(0, 35) + "...";
+//                } else {
+//                    artist = artistDummy;
+//                }
+//                singleton.setTitle(title);
+//                singleton.setArtist(artist);
+//                singleton.setSongpath(path);
+//            }
 
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        stopmusic();
-                        stopSelf();
-                    }
-                });
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+
+            if (path != null && !path.isEmpty()) {
+                playMusic(path);
             }
+            startForeground(1, createNotification());
         }
-
-        if(intent != null && intent.getAction() != null){
-            switch(intent.getAction()){
-                case "play":
-                    playmusic();
-                    break;
-                case "pause":
-                    pausemusic();
-                    break;
-                case "stop":
-                    stopmusic();
-                    stopSelf();
-                    break;
-                case "next":
-                    nextsong();
-            }
-        }
-        return START_STICKY;
-    }
-
-    private void nextsong() {
-
-    }
-
-
-    private void playmusic() {
-        if(mediaPlayer != null && !mediaPlayer.isPlaying()) {
-            Singleton.getInstance().setUpdate(true);
-            mediaPlayer.start();
-            play = false;
-        }
-    }
-
-    private void pausemusic(){
-        if(mediaPlayer != null && mediaPlayer.isPlaying()) {
-            Singleton.getInstance().setUpdate(false);
-            mediaPlayer.pause();
-            play = true;
-        }
-    }
-
-    private void stopmusic(){
-        if (mediaPlayer != null)
-        {
-            mediaPlayer.stop();
-            mediaPlayer.reset();
-            stopForeground(true);
-            stopSelf();
-            play = true;
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if(mediaPlayer != null) {
-            stopmusic();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-    }
-
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        // Stop the music and the service when the app is removed from recents.
-        stopmusic();
-        stopSelf();
-        super.onTaskRemoved(rootIntent);
+        return START_NOT_STICKY;
     }
 
 
@@ -212,6 +137,182 @@ public class foregroundservice extends Service{
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void playMusic(String path){
+        try {
+            if (mediaPlayer.isPlaying() || singleton.isPlaying()) {
+                mediaPlayer.stop();
+                mediaPlayer.reset();
+            }
+            else{
+                mediaPlayer.reset();
+            }
+            mediaPlayer.setDataSource(this, Uri.parse(path));
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            singleton.setMusicStart(true);
+            singleton.setPlaying(true);
+            mediaPlayer.setOnCompletionListener(mp -> {
+                next();
+            });
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void play(){
+        mediaPlayer.start();
+        singleton.setPlaying(true);
+        updateNotification();
+    }
+
+    private void pause(){
+        mediaPlayer.pause();
+        singleton.setPlaying(false);
+        updateNotification();
+    }
+
+    private void next(){
+        if(list != null && !list.isEmpty()) {
+            index = singleton.getPosition();
+            if (index < list.size() - 1) {
+                index++;
+                singleton.setPosition(index);
+                String path = list.get(index).getFilePath();
+                String title = list.get(index).getTitle();
+                String artist = list.get(index).getArtist();
+                singleton.setSongpath(path);
+                setname(title,artist);
+                playMusic(path);
+                updateNotification();
+            }
+        }
+    }
+
+    private void previous(){
+        if(list != null && !list.isEmpty()) {
+            index = singleton.getPosition();
+            if (index > 0) {
+                index--;
+                singleton.setPosition(index);
+                String path = list.get(index).getFilePath();
+                String title = list.get(index).getTitle();
+                String artist = list.get(index).getArtist();
+                singleton.setSongpath(path);
+                setname(title,artist);
+                playMusic(path);
+                updateNotification();
+            }
+        }
+    }
+
+    private void setname(String titleDummy, String artistDummy) {
+        if(titleDummy != null && artistDummy != null) {
+            if (titleDummy.length() > 20) {
+                title = titleDummy.substring(0, 20) + "...";
+            } else {
+                title = titleDummy;
+            }
+
+            if (artistDummy.length() > 35) {
+                artist = artistDummy.substring(0, 35) + "...";
+            } else {
+                artist = artistDummy;
+            }
+            singleton.setTitle(title);
+            singleton.setArtist(artist);
+            singleton.setSongpath(path);
+            singleton.getInstance().setLiveTitle(title);
+            singleton.getInstance().setLiveArtist(artist);
+            updateNotification();
+        }
+    }
+
+    private Notification createNotification() {
+        RemoteViews notificationlayout = new RemoteViews(getPackageName(), R.layout.notification_collapsed);
+
+        notificationlayout.setTextViewText(R.id.libraryTitle, title);
+        notificationlayout.setTextViewText(R.id.libraryArtist, artist);
+
+        PendingIntent prevIntent = PendingIntent.getBroadcast(this, 0, new Intent("ACTION_PREV"), PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent playPauseIntent = PendingIntent.getBroadcast(this, 0, new Intent("ACTION_PLAY_PAUSE"), PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent nextIntent = PendingIntent.getBroadcast(this, 0, new Intent("ACTION_NEXT"), PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent pausePauseIntent = PendingIntent.getBroadcast(this, 0, new Intent("ACTION_PAUSE_PAUSE"), PendingIntent.FLAG_IMMUTABLE);
+
+        notificationlayout.setOnClickPendingIntent(R.id.previouslist, prevIntent);
+        notificationlayout.setOnClickPendingIntent(R.id.playlist, playPauseIntent);
+        notificationlayout.setOnClickPendingIntent(R.id.pauselist, pausePauseIntent);
+        notificationlayout.setOnClickPendingIntent(R.id.nextlist,  nextIntent);
+
+        if (mediaPlayer != null && singleton.isPlaying()) {
+            notificationlayout.setViewVisibility(R.id.playlist, View.GONE);  // Hide Play button
+            notificationlayout.setViewVisibility(R.id.pauselist, View.VISIBLE);
+        }
+        else {
+            notificationlayout.setViewVisibility(R.id.playlist, View.VISIBLE);  // Show Play button
+            notificationlayout.setViewVisibility(R.id.pauselist, View.GONE);  // Hide Pause button
+        }
+        Intent intent = new Intent(this, MainActivity.class); // or your desired Activity
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent contentIntent = PendingIntent.getActivity(
+                this, 0, intent, PendingIntent.FLAG_IMMUTABLE
+        );
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentIntent(contentIntent)
+                .setSmallIcon(R.drawable.defaultimg)
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setCustomContentView(notificationlayout)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setOngoing(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .build();
+
+        return notification;
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Music Playback",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
+
+    private void updateNotification() {
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(1, createNotification());
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if(mediaPlayer != null){
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+        unregisterReceiver(notificationReceiver);
+        stopForeground(true);
+        stopSelf();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        if(mediaPlayer != null){
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+        unregisterReceiver(notificationReceiver);
+        stopForeground(true);
+        stopSelf();
     }
 }
 

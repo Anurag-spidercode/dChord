@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main2"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="#F3F3F3">
 
     <LinearLayout
         android:id="@+id/layout"
@@ -20,12 +21,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="#F3F3F3"
             android:fontFamily="@font/manrope_semibold"
             android:gravity="center|center_vertical"
             android:paddingTop="15sp"
             android:paddingBottom="15sp"
             android:text="Now playing"
-            android:textColor="#4F4C4C"
+            android:textColor="#000814"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -83,6 +85,7 @@
         android:fontFamily="@font/manrope_bold"
         android:gravity="center|center_vertical"
         android:text="Title"
+        android:textColor="#000814"
         android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/artistplay"
         app:layout_constraintEnd_toEndOf="parent"
@@ -96,6 +99,7 @@
         android:fontFamily="@font/manrope_semibold"
         android:gravity="center|center_vertical"
         android:text="artist"
+        android:textColor="#000814"
         android:textSize="15sp"
         app:layout_constraintBottom_toTopOf="@+id/progressBar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -110,6 +114,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/manrope_light"
         android:text="00:00"
+        android:textColor="#000814"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.06"
         app:layout_constraintStart_toStartOf="parent"
@@ -121,6 +126,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/manrope_light"
         android:text="00:00"
+        android:textColor="#000814"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.94"
         app:layout_constraintStart_toStartOf="parent"
@@ -139,11 +145,22 @@
         app:layout_constraintVertical_bias="0.30">
 
         <ImageButton
+            android:id="@+id/previous"
+            android:layout_width="40sp"
+            android:layout_height="40sp"
+            android:layout_weight="1"
+            android:background="#FCF6FE"
+            android:backgroundTint="#F3F3F3"
+            android:paddingLeft="50sp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/previous" />
+
+        <ImageButton
             android:id="@+id/play"
             android:layout_width="60sp"
             android:layout_height="60sp"
             android:background="#FCF6FE"
-            android:backgroundTint="#FCF6FE"
+            android:backgroundTint="#F3F3F3"
             android:scaleType="fitCenter"
             android:visibility="gone"
             app:srcCompat="@drawable/play" />
@@ -153,9 +170,22 @@
             android:layout_width="60sp"
             android:layout_height="60sp"
             android:background="#FCF6FE"
-            android:backgroundTint="#FCF6FE"
+            android:backgroundTint="#F3F3F3"
             android:scaleType="fitCenter"
+            android:visibility="visible"
             app:srcCompat="@drawable/pause" />
+
+        <ImageButton
+            android:id="@+id/next"
+            android:layout_width="40sp"
+            android:layout_height="40sp"
+            android:layout_weight="1"
+            android:background="#FCF6FE"
+            android:backgroundTint="#F3F3F3"
+            android:paddingRight="50sp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/next" />
+
     </LinearLayout>
 
 

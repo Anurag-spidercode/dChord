@@ -37,9 +37,8 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
-
-    // Missing dependency for MediaStyle
-    implementation("androidx.media:media:1.6.0")  // Add this line ✅
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation("androidx.media:media:1.6.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

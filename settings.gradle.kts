@@ -19,5 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
+
 rootProject.name = "dChord"
 include(":app")

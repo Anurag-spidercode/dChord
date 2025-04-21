@@ -1,5 +1,6 @@
 package com.example.dchord;
 
+import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,21 +17,26 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
+
     public static final String filepathurl = "com.example.dchord.playmusic";
     public static final String filepathurl2 = "com.example.dchord.playmusic2";
     public static final String filepathurl3 = "com.example.dchord.playmusic3";
+
+    Singleton singleton = Singleton.getInstance();
     public String title;
     public String artist;
     public String filePath;
     long duration;
+    int index = 0;
     private List<data> list;
+    private Context context;
     ProgressBar progressBar2;
 
-    private Viewmodel viewmodel;
+//    private Viewmodel viewmodel;
 
-    public adapter(List<data> list, Viewmodel viewmodel) {
+    public adapter(List<data> list, Context context) {
+        this.context = context;
         this.list = list;
-        this.viewmodel = viewmodel;
     }
 
     @NonNull
@@ -42,7 +48,9 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull adapter.ViewHolder holder, int position) {
+        PlaybackSongs history = new PlaybackSongs(context);
         data song = list.get(position);
+        int pos = holder.getAdapterPosition();
         title = song.getTitle();
         artist = song.getArtist();
         filePath = song.getFilePath();
@@ -75,22 +83,23 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
                 if(song == null){
                     return;
                 }
-                Singleton.getInstance().setTitle(song.getTitle());
-                Singleton.getInstance().setArtist(song.getArtist());
 
-                viewmodel.setSongname(song.getTitle());
-                viewmodel.setArtist(song.getArtist());
-
+//                viewmodel.setCurrentIndex(pos);
+                history.insertSong(song.getTitle(), song.getArtist(), song.getFilePath());//inserting to database;
+                singleton.setSongList(list);
+                index = holder.getAdapterPosition();
+                singleton.setPosition(index);
                 Intent intent = new Intent(v.getContext(), foregroundservice.class);
                 intent.putExtra(filepathurl, song.getTitle());
                 intent.putExtra(filepathurl2, song.getArtist());
                 intent.putExtra(filepathurl3, song.getFilePath());
-                intent.setAction("play");
+//                intent.setAction("play");
                 ContextCompat.startForegroundService(v.getContext(), intent);
 
-                Intent intent2 = new Intent(v.getContext(), Playsong.class);
-                intent2.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                v.getContext().startActivity(intent2);
+                if (v.getContext() instanceof MainActivity) {
+                    MainActivity swap = (MainActivity) v.getContext();
+                    swap.fragmentswap(new playsonglist());
+                }
 
             }
         });
@@ -109,14 +118,13 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title, artist, duration;
+        TextView title, artist;
         public ConstraintLayout constraintLayout;
         public ViewHolder(View itemview) {
             super(itemview);
             title = itemview.findViewById(R.id.titlename);
             artist = itemview.findViewById(R.id.artist);
             constraintLayout = itemview.findViewById(R.id.layout1);
-//            progressBar2 = itemview.findViewById(R.id.progressBar2);
         }
     }
 }
