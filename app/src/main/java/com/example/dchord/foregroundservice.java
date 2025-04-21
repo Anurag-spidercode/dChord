@@ -41,7 +41,7 @@ public class foregroundservice extends Service {
     String path;
     int index = 0;
 
-    public MediaPlayer  mediaPlayer;
+    public static MediaPlayer  mediaPlayer;
     Singleton singleton = Singleton.getInstance();
     private List<data> list;
     private final BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
