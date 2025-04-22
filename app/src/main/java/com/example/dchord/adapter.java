@@ -87,6 +87,7 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
 //                viewmodel.setCurrentIndex(pos);
                 history.insertSong(song.getTitle(), song.getArtist(), song.getFilePath());//inserting to database;
                 singleton.setSongList(list);
+                singleton.setSongpath(song.getFilePath());
                 index = holder.getAdapterPosition();
                 singleton.setPosition(index);
                 Intent intent = new Intent(v.getContext(), foregroundservice.class);

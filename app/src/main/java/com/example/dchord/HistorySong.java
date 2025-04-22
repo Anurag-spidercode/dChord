@@ -6,6 +6,7 @@ public class HistorySong {
     private String artist;
     private String path;
 
+
     public HistorySong(int id, String title, String artist, String path) {
         this.id = id;
         this.title = title;

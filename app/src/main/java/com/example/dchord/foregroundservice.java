@@ -43,6 +43,7 @@ public class foregroundservice extends Service {
 
     public static MediaPlayer  mediaPlayer;
     Singleton singleton = Singleton.getInstance();
+    PlaybackSongs history = new PlaybackSongs(this);
     private List<data> list;
     private final BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
         @Override
@@ -63,7 +64,6 @@ public class foregroundservice extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
         IntentFilter filter = new IntentFilter();
         filter.addAction("ACTION_PLAY_PAUSE");
         filter.addAction("ACTION_NEXT");
@@ -183,6 +183,7 @@ public class foregroundservice extends Service {
                 String path = list.get(index).getFilePath();
                 String title = list.get(index).getTitle();
                 String artist = list.get(index).getArtist();
+                history.insertSong(title,artist,path);
                 singleton.setSongpath(path);
                 setname(title,artist);
                 playMusic(path);
@@ -200,6 +201,7 @@ public class foregroundservice extends Service {
                 String path = list.get(index).getFilePath();
                 String title = list.get(index).getTitle();
                 String artist = list.get(index).getArtist();
+                history.insertSong(title,artist,path);
                 singleton.setSongpath(path);
                 setname(title,artist);
                 playMusic(path);

@@ -4,10 +4,12 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION_CODE_STORAGE = 123;
     private static final int REQUEST_PERMISSION_CODE_NOTIFICATION = 124;
     ImageView homeOuter, homeFilled, heartOuter, heartFilled, playlistOuter, playlistFilled, historyOuter, historyFilled;
+
+    TextView allsongs, history;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,13 +40,32 @@ public class MainActivity extends AppCompatActivity {
         playlistOuter = findViewById(R.id.playlistOuter);
         historyOuter = findViewById(R.id.historyOuter);
 
+        allsongs = findViewById(R.id.all);
+        history =  findViewById(R.id.history);
+
         homeFilled = findViewById(R.id.homeFilled);
         heartFilled = findViewById(R.id.heartFilled);
         playlistFilled = findViewById(R.id.playlistFilled);
         historyFilled = findViewById(R.id.historyFilled);
 
         fragmentswap(new MusicList());
-        buttonclick(1);
+        buttonclick(5);
+
+        allsongs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentswap(new MusicList());
+                buttonclick(5);
+            }
+        });
+
+        history.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentswap(new history());
+                buttonclick(6);
+            }
+        });
 
         homeOuter.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +91,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        heartFilled.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentswap(new fragmnetFavourate());
+                buttonclick(2);
+            }
+        });
+
         playlistOuter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,7 +106,24 @@ public class MainActivity extends AppCompatActivity {
                 buttonclick(3);
             }
         });
+
+        playlistFilled.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentswap(new history());
+                buttonclick(3);
+            }
+        });
+
         historyOuter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentswap(new history());
+                buttonclick(4);
+            }
+        });
+
+        historyFilled.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fragmentswap(new history());
@@ -135,6 +183,15 @@ public class MainActivity extends AppCompatActivity {
                 heartFilled.setVisibility(ImageView.INVISIBLE);
                 playlistFilled.setVisibility(ImageView.INVISIBLE);
                 historyFilled.setVisibility(ImageView.VISIBLE);
+                break;
+
+            case 5:
+                allsongs.setTextColor(Color.parseColor("#C6C6C6"));//white
+                history.setTextColor(Color.parseColor("#49454F"));//grey
+                break;
+            case 6:
+                allsongs.setTextColor(Color.parseColor("#49454F"));//grey
+                history.setTextColor(Color.parseColor("#C6C6C6"));//white
                 break;
         }
     }

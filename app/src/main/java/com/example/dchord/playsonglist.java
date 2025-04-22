@@ -30,8 +30,10 @@ public class playsonglist extends Fragment {
     TextView title , artist, startingtime, endtime;
     SeekBar seekBar;
 
+    favoriteSong fav;
+
     private List<data> list = new ArrayList<>();
-    ImageView previous, play, pause, next;
+    ImageView previous, play, pause, next, like, dislike;
     Context context;
 
     private final BroadcastReceiver playbackReceiver = new BroadcastReceiver() {
@@ -78,6 +80,7 @@ public class playsonglist extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         context = getContext();
+        fav = new favoriteSong(getContext());
         View view = inflater.inflate(R.layout.fragment_playsonglist, container, false);
         title = view.findViewById(R.id.titlelist);
         artist = view.findViewById(R.id.artistlist);
@@ -91,6 +94,8 @@ public class playsonglist extends Fragment {
         play = view.findViewById(R.id.playplay);
         pause = view.findViewById(R.id.pauseplay);
         next = view.findViewById(R.id.nextplay);
+        like = view.findViewById(R.id.like);
+        dislike = view.findViewById(R.id.dislike);
 
         title.setText(singleton.getTitle());
         artist.setText(singleton.getArtist());
@@ -102,6 +107,24 @@ public class playsonglist extends Fragment {
         singleton.getInstance().getLiveArtist().observe(getViewLifecycleOwner(), newArtist -> {
             artist.setText(newArtist);
         });
+
+//        like.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                fav.insertFavorite(singleton.getTitle(),singleton.getArtist(), singleton.getSongpath());
+//                dislike.setVisibility(View.VISIBLE);
+//                like.setVisibility(View.INVISIBLE);
+//            }
+//        });
+//
+//        dislike.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                fav.deleteFavoriteByPath(singleton.getSongpath());
+//                dislike.setVisibility(View.INVISIBLE);
+//                like.setVisibility(View.VISIBLE);
+//            }
+//        });
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,6 +204,16 @@ public class playsonglist extends Fragment {
             play.setVisibility(View.VISIBLE);
             pause.setVisibility(View.INVISIBLE);
         }
+
+//        if (fav.isFavorite(singleton.getSongpath())) {
+//            dislike.setVisibility(View.VISIBLE);
+//            like.setVisibility(View.INVISIBLE);
+//        }
+//        else
+//        {
+//            dislike.setVisibility(View.INVISIBLE);
+//            like.setVisibility(View.VISIBLE);
+//        }
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("ACTION_PLAY_PAUSE");

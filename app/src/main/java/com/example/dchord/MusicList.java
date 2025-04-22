@@ -10,8 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,7 +17,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
+
+import com.example.dchord.search;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,8 @@ public class MusicList extends Fragment {
     TextView title, artist;
     ConstraintLayout constraintLayout, player;
 
+    SearchView search;
+
     private final BroadcastReceiver playbackReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -61,7 +64,7 @@ public class MusicList extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         context = getContext();
         View view = inflater.inflate(R.layout.fragment_music_list,container,false);
-        recyclerView = view.findViewById(R.id.recyclerview);
+        recyclerView = view.findViewById(R.id.recyclerview2);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = MusicFetch.fetchAllSongs(requireContext().getContentResolver());
         adapter = new adapter(list, requireContext());
@@ -69,6 +72,8 @@ public class MusicList extends Fragment {
         title = view.findViewById(R.id.libraryTitle);
         artist = view.findViewById(R.id.libraryArtist);
         player = view.findViewById(R.id.constraintLayout2);
+
+        search = view.findViewById(R.id.search);
 
         play = view.findViewById(R.id.playlist);
         pause = view.findViewById(R.id.pauselist);
@@ -95,6 +100,17 @@ public class MusicList extends Fragment {
         else{
             constraintLayout.setVisibility(View.GONE);
         }
+
+        search.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    MainActivity swap = (MainActivity) v.getContext();
+                    swap.fragmentswap(new search());
+                }
+            }
+        });
+
 
         player.setOnClickListener(new View.OnClickListener() {
             @Override
