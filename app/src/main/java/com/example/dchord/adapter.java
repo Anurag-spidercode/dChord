@@ -2,9 +2,16 @@ package com.example.dchord;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -14,6 +21,10 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
@@ -77,6 +88,16 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
             holder.artist.setText(artist);
         }
 
+        String path = song.getFilePath();
+
+        Glide.with(context)
+                .asBitmap()
+                .load(getAlbumArt(filePath))
+                .apply(RequestOptions.bitmapTransform(new RoundedCorners(30)))
+                .error(R.drawable.defaultimg)
+                .placeholder(R.drawable.defaultimg)
+                .into(holder.image);
+
         holder.constraintLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,7 +108,10 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
 //                viewmodel.setCurrentIndex(pos);
                 history.insertSong(song.getTitle(), song.getArtist(), song.getFilePath());//inserting to database;
                 singleton.setSongList(list);
+                byte[] art = getAlbumArt(song.getFilePath());
+                singleton.setImage(art);
                 singleton.setSongpath(song.getFilePath());
+                Singleton.getInstance().setLivePath(song.getFilePath());
                 index = holder.getAdapterPosition();
                 singleton.setPosition(index);
                 Intent intent = new Intent(v.getContext(), foregroundservice.class);
@@ -118,14 +142,61 @@ public class adapter extends RecyclerView.Adapter<adapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
+    private byte[] getAlbumArt(String filePath) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(filePath);
+            byte[] art = retriever.getEmbeddedPicture();
+            retriever.release();
+            return art; // May be null, Glide handles it.
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+//    public Bitmap getImage(String path){
+//        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+//        try {
+//            File file = new File(filePath);
+//            if (!file.exists()) {
+//                Log.e("AlbumArt", "File does not exist: " + filePath);
+//                return getDefaultArt();
+//            }
+//
+//            retriever.setDataSource(filePath);
+//            byte[] art = retriever.getEmbeddedPicture();
+//            retriever.release();
+//
+//            if (art != null) {
+//                return BitmapFactory.decodeByteArray(art, 0, art.length);
+//            } else {
+//                return getDefaultArt();
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();  // print which file caused it
+//            Log.e("AlbumArt", "Error getting album art for: " + filePath);
+//            return getDefaultArt();
+//        }
+//    }
+//
+//    private Bitmap getDefaultArt() {
+//        return BitmapFactory.decodeResource(context.getResources(), R.drawable.defaultimg);
+//    }
+
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, artist;
+        ImageView image;
         public ConstraintLayout constraintLayout;
         public ViewHolder(View itemview) {
             super(itemview);
             title = itemview.findViewById(R.id.titlename);
             artist = itemview.findViewById(R.id.artist);
             constraintLayout = itemview.findViewById(R.id.layout1);
+            image = itemview.findViewById(R.id.imageView);
         }
     }
 }

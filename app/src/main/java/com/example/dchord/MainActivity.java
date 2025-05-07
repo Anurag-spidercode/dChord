@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -24,9 +25,10 @@ import android.Manifest;
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION_CODE_STORAGE = 123;
     private static final int REQUEST_PERMISSION_CODE_NOTIFICATION = 124;
-    ImageView homeOuter, homeFilled, heartOuter, heartFilled, playlistOuter, playlistFilled, historyOuter, historyFilled;
+    ImageView homeOuter, homeFilled, heartOuter, heartFilled, playlistOuter, playlistFilled, historyOuter, historyFilled, timeline_outline, timeline_filled, all_outline, all_filled;
 
     TextView allsongs, history;
+    ConstraintLayout historylayout, alllayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,10 +50,19 @@ public class MainActivity extends AppCompatActivity {
         playlistFilled = findViewById(R.id.playlistFilled);
         historyFilled = findViewById(R.id.historyFilled);
 
+        timeline_filled= findViewById(R.id.timeline_filled);
+        timeline_outline= findViewById(R.id.timeline_outline);
+        historylayout = findViewById(R.id.history_layout);
+
+        all_filled= findViewById(R.id.all_filled);
+        all_outline=findViewById(R.id.all_outline);
+        alllayout=findViewById(R.id.all_layout);
+
+
         fragmentswap(new MusicList());
         buttonclick(5);
 
-        allsongs.setOnClickListener(new View.OnClickListener() {
+        alllayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fragmentswap(new MusicList());
@@ -59,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        history.setOnClickListener(new View.OnClickListener() {
+        historylayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fragmentswap(new history());
@@ -188,10 +199,20 @@ public class MainActivity extends AppCompatActivity {
             case 5:
                 allsongs.setTextColor(Color.parseColor("#C6C6C6"));//white
                 history.setTextColor(Color.parseColor("#49454F"));//grey
+                timeline_outline.setVisibility(View.VISIBLE);
+                timeline_filled.setVisibility(View.INVISIBLE);
+
+                all_outline.setVisibility(View.INVISIBLE);
+                all_filled.setVisibility(View.VISIBLE);
                 break;
             case 6:
                 allsongs.setTextColor(Color.parseColor("#49454F"));//grey
                 history.setTextColor(Color.parseColor("#C6C6C6"));//white
+                timeline_outline.setVisibility(View.INVISIBLE);
+                timeline_filled.setVisibility(View.VISIBLE);
+
+                all_outline.setVisibility(View.VISIBLE);
+                all_filled.setVisibility(View.INVISIBLE);
                 break;
         }
     }
@@ -212,4 +233,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+
+
 

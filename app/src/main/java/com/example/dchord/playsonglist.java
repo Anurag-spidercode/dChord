@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,10 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.dchord.foregroundservice;
 
 
@@ -33,7 +38,7 @@ public class playsonglist extends Fragment {
     favoriteSong fav;
 
     private List<data> list = new ArrayList<>();
-    ImageView previous, play, pause, next, like, dislike;
+    ImageView previous, play, pause, next, like, dislike, image;
     Context context;
 
     private final BroadcastReceiver playbackReceiver = new BroadcastReceiver() {
@@ -49,6 +54,22 @@ public class playsonglist extends Fragment {
             }
         }
     };
+
+
+    private final BroadcastReceiver songChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context ctx, Intent intent) {
+            String newPath = intent.getStringExtra("path");
+            // directly update with the fresh path:
+            Glide.with(requireContext())
+                    .asBitmap()
+                    .load(getAlbumArt(newPath))
+                    .error(R.drawable.defaultimg)
+                    .placeholder(R.drawable.defaultimg)
+                    .into(image);
+        }
+    };
+
 
 
     private Handler handler = new Handler();
@@ -90,6 +111,8 @@ public class playsonglist extends Fragment {
         startingtime = view.findViewById(R.id.starting);
         endtime = view.findViewById(R.id.ending);
 
+        image = view.findViewById(R.id.imageView4);
+
         previous = view.findViewById(R.id.previousplay);
         play = view.findViewById(R.id.playplay);
         pause = view.findViewById(R.id.pauseplay);
@@ -99,6 +122,7 @@ public class playsonglist extends Fragment {
 
         title.setText(singleton.getTitle());
         artist.setText(singleton.getArtist());
+        updateImage();
 
         singleton.getInstance().getLiveTitle().observe(getViewLifecycleOwner(), newTitle -> {
             title.setText(newTitle);
@@ -107,6 +131,12 @@ public class playsonglist extends Fragment {
         singleton.getInstance().getLiveArtist().observe(getViewLifecycleOwner(), newArtist -> {
             artist.setText(newArtist);
         });
+
+        singleton.getLivePath().observe(getViewLifecycleOwner(), newPath -> {
+            // newPath is the new filePath — just reload the image
+            updateImage();
+        });
+
 
 //        like.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -190,6 +220,10 @@ public class playsonglist extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        requireContext().registerReceiver(
+                songChangedReceiver,
+                new IntentFilter("com.example.dchord.SONG_CHANGED")
+        );
 
         if (foregroundservice.mediaPlayer != null && foregroundservice.mediaPlayer.isPlaying()) {
             handler.post(updateseekbar);
@@ -224,13 +258,39 @@ public class playsonglist extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        requireContext().unregisterReceiver(songChangedReceiver);
         requireContext().unregisterReceiver(playbackReceiver);
+        handler.removeCallbacks(updateseekbar);
     }
 
     private String formatTime(int timeInMillis) {
         int minutes = timeInMillis / 1000 / 60;
         int seconds = timeInMillis / 1000 % 60;
         return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    private void updateImage(){
+        Glide.with(context)
+                .asBitmap()
+                .load(getAlbumArt(singleton.getSongpath()))
+                .apply(RequestOptions.bitmapTransform(new RoundedCorners(30)))
+                .error(R.drawable.defaultimg)
+                .placeholder(R.drawable.defaultimg)
+                .into(image);
+    }
+
+
+    private byte[] getAlbumArt(String filePath) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(filePath);
+            byte[] art = retriever.getEmbeddedPicture();
+            retriever.release();
+            return art; // May be null, Glide handles it.
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private void message(String action){

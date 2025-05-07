@@ -150,6 +150,7 @@ public class foregroundservice extends Service {
             }
             mediaPlayer.setDataSource(this, Uri.parse(path));
             mediaPlayer.prepare();
+            Singleton.getInstance().setLivePath(path);
             mediaPlayer.start();
             singleton.setMusicStart(true);
             singleton.setPlaying(true);
@@ -185,8 +186,12 @@ public class foregroundservice extends Service {
                 String artist = list.get(index).getArtist();
                 history.insertSong(title,artist,path);
                 singleton.setSongpath(path);
+                singleton.setLivePath(path);
                 setname(title,artist);
                 playMusic(path);
+                Intent changed = new Intent("com.example.dchord.SONG_CHANGED");
+                changed.putExtra("path", path);
+                sendBroadcast(changed);
                 updateNotification();
             }
         }
@@ -203,13 +208,16 @@ public class foregroundservice extends Service {
                 String artist = list.get(index).getArtist();
                 history.insertSong(title,artist,path);
                 singleton.setSongpath(path);
+                singleton.setLivePath(path);
                 setname(title,artist);
                 playMusic(path);
+                Intent changed = new Intent("com.example.dchord.SONG_CHANGED");
+                changed.putExtra("path", path);
+                sendBroadcast(changed);
                 updateNotification();
             }
         }
     }
-
     private void setname(String titleDummy, String artistDummy) {
         if(titleDummy != null && artistDummy != null) {
             if (titleDummy.length() > 20) {
@@ -226,6 +234,7 @@ public class foregroundservice extends Service {
             singleton.setTitle(title);
             singleton.setArtist(artist);
             singleton.setSongpath(path);
+            singleton.setLivePath(path);
             singleton.getInstance().setLiveTitle(title);
             singleton.getInstance().setLiveArtist(artist);
             updateNotification();

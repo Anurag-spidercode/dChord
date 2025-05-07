@@ -67,6 +67,8 @@ public class MusicList extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerview2);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = MusicFetch.fetchAllSongs(requireContext().getContentResolver());
+        list.sort((song1, song2) -> song1.getTitle().compareToIgnoreCase(song2.getTitle()));
+
         adapter = new adapter(list, requireContext());
         recyclerView.setAdapter(adapter);
         title = view.findViewById(R.id.libraryTitle);

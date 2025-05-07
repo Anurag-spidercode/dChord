@@ -2,14 +2,20 @@ package com.example.dchord;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
@@ -50,6 +56,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.SongView
         names(titleDummy,artistDummy);
         holder.titleTextView.setText(title);
         holder.artistTextView.setText(artist);
+
+        Glide.with(context)
+                .asBitmap()
+                .load(getAlbumArt(path))
+                .apply(RequestOptions.bitmapTransform(new RoundedCorners(30)))
+                .error(R.drawable.defaultimg)
+                .placeholder(R.drawable.defaultimg)
+                .into(holder.image);
 
         holder.constraintLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,9 +111,23 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.SongView
                 }
     }
 
+    private byte[] getAlbumArt(String filePath) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(filePath);
+            byte[] art = retriever.getEmbeddedPicture();
+            retriever.release();
+            return art; // May be null, Glide handles it.
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static class SongViewHolder extends RecyclerView.ViewHolder {
         TextView titleTextView;
         TextView artistTextView;
+        ImageView image;
 
         ConstraintLayout constraintLayout;
 
@@ -108,6 +136,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.SongView
             titleTextView = itemView.findViewById(R.id.titlename);
             artistTextView = itemView.findViewById(R.id.artist);
             constraintLayout = itemView.findViewById(R.id.layout1);
+            image = itemView.findViewById(R.id.imageView);
         }
     }
 }

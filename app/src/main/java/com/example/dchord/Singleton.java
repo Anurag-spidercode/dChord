@@ -1,5 +1,6 @@
 package com.example.dchord;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
@@ -17,8 +18,11 @@ public class Singleton {
 
     private String songpath = "";
 
+    private byte[] image;
+
     private final MutableLiveData<String> title = new MutableLiveData<>();
     private final MutableLiveData<String> artist = new MutableLiveData<>();
+    private final MutableLiveData<String> livePath = new MutableLiveData<>();
 
     private static List<data> songList = new ArrayList<>();
 
@@ -46,6 +50,22 @@ public class Singleton {
 
     public void setLiveArtist(String newArtist) {
         artist.postValue(newArtist);
+    }
+
+    public void setLivePath(String path) {
+        livePath.postValue(path);
+    }
+
+    public LiveData<String> getLivePath() {
+        return livePath;
+    }
+
+    public byte[] getImage(){
+        return image;
+    }
+
+    public void setImage(byte[] art){
+        this.image = art;
     }
 
     public boolean isMusicStart() {
