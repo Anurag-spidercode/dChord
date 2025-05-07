@@ -288,7 +288,7 @@ public class foregroundservice extends Service {
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
                     "Music Playback",
-                    NotificationManager.IMPORTANCE_HIGH
+                    NotificationManager.IMPORTANCE_LOW
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);

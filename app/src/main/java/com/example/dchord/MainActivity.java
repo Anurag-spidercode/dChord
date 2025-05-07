@@ -219,18 +219,51 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void checkAndRequestPermissions() {
-        // For Android 13+ (POST_NOTIFICATIONS)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_PERMISSION_CODE_NOTIFICATION);
+            // Android 13 (API 33) and above
+            String[] permissions = new String[]{
+                    Manifest.permission.READ_MEDIA_AUDIO,
+                    Manifest.permission.POST_NOTIFICATIONS
+            };
+
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE_STORAGE);
+
+        } else {
+            // Android 12 and below
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        REQUEST_PERMISSION_CODE_STORAGE);
+            }
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        boolean allGranted = true;
+
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                allGranted = false;
+                break;
             }
         }
 
-        // For Android versions below Android 13, check READ_EXTERNAL_STORAGE
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE_STORAGE);
+        if (allGranted) {
+
+            // Refresh app: re-load the default fragment and reset UI
+            fragmentswap(new MusicList());  // or any default fragment
+            buttonclick(5); // Default view update
+
+        } else {
+            Toast.makeText(this, "Please grant all permissions for full functionality.", Toast.LENGTH_LONG).show();
         }
     }
+
+
+
 
 }
 
